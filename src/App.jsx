@@ -117,6 +117,7 @@ function TeamCard({
   tieBreakPoints,
   onAddPoint,
   fullscreen,
+  tvMode,
   accent,
 }) {
   const cardStyle = {
@@ -155,21 +156,35 @@ function TeamCard({
 
   return (
     <div style={cardStyle}>
-      <input
-        placeholder="Escribí nombres (ej: Juan / Pedro)"
-        value={name}
-        onChange={onNameChange}
-        style={{
-          fontSize: fullscreen ? 34 : 30,
-          fontWeight: 800,
-          border: 'none',
-          outline: 'none',
-          background: 'transparent',
-          width: '100%',
-          marginBottom: 14,
-          color: '#111827',
-        }}
-      />
+      {tvMode ? (
+        <div
+          style={{
+            fontSize: fullscreen ? 34 : 30,
+            fontWeight: 800,
+            width: '100%',
+            marginBottom: 14,
+            color: '#111827',
+          }}
+        >
+          {name}
+        </div>
+      ) : (
+        <input
+          placeholder="Escribí nombres (ej: Juan / Pedro)"
+          value={name}
+          onChange={onNameChange}
+          style={{
+            fontSize: fullscreen ? 34 : 30,
+            fontWeight: 800,
+            border: 'none',
+            outline: 'none',
+            background: 'transparent',
+            width: '100%',
+            marginBottom: 14,
+            color: '#111827',
+          }}
+        />
+      )}
 
       <div style={bigPointsStyle}>
         <div style={{ fontSize: 12, letterSpacing: 1, opacity: 0.75, marginBottom: 6 }}>
@@ -182,33 +197,44 @@ function TeamCard({
 
       <div style={statsRow}>
         <div style={statStyle}>
-          <div style={{ fontSize: 12, color: '#374151', marginBottom: 4, fontWeight: 800 }}>GAMES</div>
-          <div style={{ fontSize: fullscreen ? 50 : 40, fontWeight: 900, color: '#111827' }}>{games}</div>
+          <div style={{ fontSize: 12, color: '#374151', marginBottom: 4, fontWeight: 800 }}>
+            JUEGOS
+          </div>
+          <div style={{ fontSize: fullscreen ? 50 : 40, fontWeight: 900, color: '#111827' }}>
+            {games}
+          </div>
         </div>
         <div style={statStyle}>
-          <div style={{ fontSize: 12, color: '#374151', marginBottom: 4, fontWeight: 800 }}>SETS</div>
-          <div style={{ fontSize: fullscreen ? 42 : 34, fontWeight: 900, color: '#111827' }}>{sets}</div>
+          <div style={{ fontSize: 12, color: '#374151', marginBottom: 4, fontWeight: 800 }}>
+            CONJUNTOS
+          </div>
+          <div style={{ fontSize: fullscreen ? 42 : 34, fontWeight: 900, color: '#111827' }}>
+            {sets}
+          </div>
         </div>
       </div>
 
-      <button
-        style={{
-          ...primaryButton,
-          width: '100%',
-          fontSize: fullscreen ? 28 : 22,
-          padding: fullscreen ? '18px 20px' : '16px 18px',
-          background: accent,
-        }}
-        onClick={onAddPoint}
-      >
-        +1 Punto
-      </button>
+      {!tvMode ? (
+        <button
+          style={{
+            ...primaryButton,
+            width: '100%',
+            fontSize: fullscreen ? 28 : 22,
+            padding: fullscreen ? '18px 20px' : '16px 18px',
+            background: accent,
+          }}
+          onClick={onAddPoint}
+        >
+          +1 Punto
+        </button>
+      ) : null}
     </div>
   );
 }
 
 export default function App() {
   const [fullscreen, setFullscreen] = useState(false);
+  const [tvMode, setTvMode] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [logoVisible, setLogoVisible] = useState(true);
   const [state, setState] = useState(createInitialState);
@@ -222,6 +248,7 @@ export default function App() {
         setState({
           ...createInitialState(),
           ...parsed,
+          logoUrl: DEFAULT_LOGO,
         });
       } catch (e) {
         console.error('Error cargando datos guardados');
@@ -239,6 +266,7 @@ export default function App() {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (AudioCtx) {
           const ctx = new AudioCtx();
+
           const playTone = (frequency, start, duration) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -250,6 +278,7 @@ export default function App() {
             osc.start(ctx.currentTime + start);
             osc.stop(ctx.currentTime + start + duration);
           };
+
           playTone(880, 0, 0.18);
           playTone(1174, 0.2, 0.18);
           playTone(1567, 0.4, 0.28);
@@ -258,6 +287,7 @@ export default function App() {
         console.error('No se pudo reproducir la alarma');
       }
     }
+
     lastFinishedRef.current = state.matchFinished;
   }, [state.matchFinished, state.soundEnabled]);
 
@@ -290,6 +320,7 @@ export default function App() {
     }
 
     const setsToWin = getSetsToWin(next.format);
+
     if (next.setsA >= setsToWin) {
       next.matchFinished = true;
       next.winner = next.teamA;
@@ -385,34 +416,36 @@ export default function App() {
     setLogoVisible(true);
   };
 
-  const bgColor = fullscreen ? '#111827' : '#f3f4f6';
-  const textColor = fullscreen ? '#ffffff' : '#111827';
+  const bgColor = fullscreen || tvMode ? '#111827' : '#f3f4f6';
+  const textColor = fullscreen || tvMode ? '#ffffff' : '#111827';
 
   return (
     <div>
-      <button
-        onClick={() => setFullscreen(!fullscreen)}
-        style={{
-          position: 'fixed',
-          top: 10,
-          right: 10,
-          zIndex: 1000,
-          ...darkButton,
-        }}
-      >
-        {fullscreen ? 'Salir pantalla' : 'Pantalla completa'}
-      </button>
+      {!tvMode ? (
+        <button
+          onClick={() => setFullscreen(!fullscreen)}
+          style={{
+            position: 'fixed',
+            top: 10,
+            right: 10,
+            zIndex: 1000,
+            ...darkButton,
+          }}
+        >
+          {fullscreen ? 'Salir pantalla' : 'Pantalla completa'}
+        </button>
+      ) : null}
 
       <div
         style={{
           minHeight: '100vh',
           background: bgColor,
           fontFamily: 'Arial, sans-serif',
-          padding: fullscreen ? 10 : 20,
+          padding: fullscreen || tvMode ? 10 : 20,
           color: textColor,
         }}
       >
-        <div style={{ maxWidth: fullscreen ? '100%' : 1240, margin: '0 auto' }}>
+        <div style={{ maxWidth: fullscreen || tvMode ? '100%' : 1240, margin: '0 auto' }}>
           <div
             style={{
               display: 'flex',
@@ -420,29 +453,32 @@ export default function App() {
               alignItems: 'center',
               gap: 16,
               flexWrap: 'wrap',
-              marginBottom: 20,
+              marginBottom: tvMode ? 10 : 20,
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
               {logoVisible ? (
                 <img
                   src={state.logoUrl || DEFAULT_LOGO}
                   alt="PadelBull"
                   onError={() => setLogoVisible(false)}
                   style={{
-                    width: fullscreen ? 84 : 64,
-                    height: fullscreen ? 84 : 64,
+                    width: fullscreen || tvMode ? 84 : 64,
+                    height: fullscreen || tvMode ? 84 : 64,
                     objectFit: 'contain',
+                    aspectRatio: '1 / 1',
                     background: '#ffffff',
                     borderRadius: 16,
-                    padding: 6,
+                    padding: 4,
+                    border: '2px solid #e5e7eb',
                   }}
                 />
               ) : (
                 <div
                   style={{
-                    width: fullscreen ? 84 : 64,
-                    height: fullscreen ? 84 : 64,
+                    width: fullscreen || tvMode ? 84 : 64,
+                    height: fullscreen || tvMode ? 84 : 64,
+                    aspectRatio: '1 / 1',
                     background: '#16a34a',
                     color: '#ffffff',
                     borderRadius: 16,
@@ -450,7 +486,8 @@ export default function App() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontWeight: 900,
-                    fontSize: fullscreen ? 28 : 22,
+                    fontSize: fullscreen || tvMode ? 28 : 22,
+                    border: '2px solid #14532d',
                   }}
                 >
                   PB
@@ -461,26 +498,47 @@ export default function App() {
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#16a34a', letterSpacing: 1 }}>
                   PADELBULL
                 </div>
-                <h1 style={{ margin: '6px 0 0 0', fontSize: fullscreen ? 66 : 42 }}>
+                <h1
+                  style={{
+                    margin: '6px 0 0 0',
+                    fontSize: tvMode ? 56 : fullscreen ? 66 : 42,
+                    lineHeight: 1.05,
+                  }}
+                >
                   Tanteador Pro
                 </h1>
-                <div style={{ opacity: 0.75, fontSize: 14 }}>
+                <div style={{ opacity: 0.75, fontSize: tvMode ? 18 : 14 }}>
                   Formato: {getFormatLabel(state.format)}
                 </div>
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button style={secondaryButton} onClick={() => setShowSettings((prev) => !prev)}>
-                {showSettings ? 'Cerrar ajustes' : 'Configuración'}
+            {!tvMode ? (
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button style={secondaryButton} onClick={() => setTvMode(true)}>
+                  Modo TV
+                </button>
+                <button style={secondaryButton} onClick={() => setShowSettings((prev) => !prev)}>
+                  {showSettings ? 'Cerrar ajustes' : 'Configuración'}
+                </button>
+                <button style={secondaryButton} onClick={undo}>
+                  Deshacer
+                </button>
+                <button style={secondaryButton} onClick={resetPoints}>
+                  Reset puntos
+                </button>
+                <button style={dangerButton} onClick={resetMatch}>
+                  Reset partido
+                </button>
+              </div>
+            ) : (
+              <button style={secondaryButton} onClick={() => setTvMode(false)}>
+                Salir modo TV
               </button>
-              <button style={secondaryButton} onClick={undo}>Deshacer</button>
-              <button style={secondaryButton} onClick={resetPoints}>Reset puntos</button>
-              <button style={dangerButton} onClick={resetMatch}>Reset partido</button>
-            </div>
+            )}
           </div>
 
-          {showSettings ? (
+          {!tvMode && showSettings ? (
             <div
               style={{
                 background: '#ffffff',
@@ -491,7 +549,9 @@ export default function App() {
                 color: '#111827',
               }}
             >
-              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 14 }}>Configuración del partido</div>
+              <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 14 }}>
+                Configuración del partido
+              </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 14 }}>
                 <button
@@ -523,13 +583,23 @@ export default function App() {
                 </button>
                 <button
                   style={!state.tieBreakEnabled ? primaryButton : secondaryButton}
-                  onClick={() => setState((prev) => ({ ...prev, tieBreakEnabled: false, inTieBreak: false, tieBreakA: 0, tieBreakB: 0 }))}
+                  onClick={() =>
+                    setState((prev) => ({
+                      ...prev,
+                      tieBreakEnabled: false,
+                      inTieBreak: false,
+                      tieBreakA: 0,
+                      tieBreakB: 0,
+                    }))
+                  }
                 >
                   Tie-break OFF
                 </button>
                 <button
                   style={state.soundEnabled ? primaryButton : secondaryButton}
-                  onClick={() => setState((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }))}
+                  onClick={() =>
+                    setState((prev) => ({ ...prev, soundEnabled: !prev.soundEnabled }))
+                  }
                 >
                   {state.soundEnabled ? 'Alarma ON' : 'Alarma OFF'}
                 </button>
@@ -552,12 +622,15 @@ export default function App() {
                   }}
                 />
                 <div style={{ fontSize: 13, color: '#6b7280' }}>
-                  Para que el logo aparezca online, guardá la imagen en la carpeta public con el nombre logo-padelbull.png.
+                  Para que el logo aparezca online, guardá la imagen en la carpeta public con el
+                  nombre logo-padelbull.png.
                 </div>
               </div>
 
               <div style={{ marginTop: 14 }}>
-                <button style={dangerButton} onClick={clearSavedData}>Borrar datos guardados</button>
+                <button style={dangerButton} onClick={clearSavedData}>
+                  Borrar datos guardados
+                </button>
               </div>
             </div>
           ) : null}
@@ -608,7 +681,8 @@ export default function App() {
               tieBreakPoints={state.inTieBreak ? state.tieBreakA : null}
               onAddPoint={() => addPoint('A')}
               accent="#16a34a"
-              fullscreen={fullscreen}
+              fullscreen={fullscreen || tvMode}
+              tvMode={tvMode}
             />
 
             <TeamCard
@@ -620,7 +694,8 @@ export default function App() {
               tieBreakPoints={state.inTieBreak ? state.tieBreakB : null}
               onAddPoint={() => addPoint('B')}
               accent="#2563eb"
-              fullscreen={fullscreen}
+              fullscreen={fullscreen || tvMode}
+              tvMode={tvMode}
             />
           </div>
         </div>
