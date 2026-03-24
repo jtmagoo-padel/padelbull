@@ -1,0 +1,21 @@
+{
+  "name": "PadelBull - Tanteador Pro",
+  "short_name": "PadelBull",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#16a34a",
+  "description": "Tanteador de pádel instalable para partidos y torneos.",
+  "icons": [
+    {
+      "src": "/logo-padelbull.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-padelbull.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
